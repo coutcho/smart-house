@@ -1,0 +1,28 @@
+{
+  "name": "smart-home-safety-backend",
+  "version": "1.0.0",
+  "description": "Backend API, Emergency Response Engine & IoT Gateway for Smart Home Safety",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "optionalDependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "keywords": [
+    "iot",
+    "smart-home",
+    "emergency-response",
+    "safety",
+    "firebase"
+  ],
+  "author": "Smart Home Safety Team",
+  "license": "MIT"
+}

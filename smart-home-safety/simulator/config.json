@@ -1,0 +1,48 @@
+{
+  "backend": {
+    "baseUrl": "http://localhost:5000/api/v1",
+    "apiKey": "smart_home_sensor_secret_key_2026",
+    "houseId": "HOUSE_001",
+    "telemetryIntervalSec": 5,
+    "heartbeatIntervalSec": 10,
+    "timeoutSec": 5
+  },
+  "sensors": [
+    {
+      "sensorId": "SENS_GAS_01",
+      "type": "gas",
+      "location": "Kitchen / Range Area",
+      "unit": "ppm",
+      "baseline": 12.0,
+      "noiseStd": 2.0,
+      "batteryDrainPerDay": 0.05
+    },
+    {
+      "sensorId": "SENS_SMOKE_01",
+      "type": "smoke",
+      "location": "Living Room Ceiling",
+      "unit": "obscuration_index",
+      "baseline": 2.0,
+      "noiseStd": 0.5,
+      "batteryDrainPerDay": 0.04
+    },
+    {
+      "sensorId": "SENS_TEMP_01",
+      "type": "temperature",
+      "location": "Boiler / Utility Room",
+      "unit": "°C",
+      "baseline": 21.5,
+      "noiseStd": 0.3,
+      "batteryDrainPerDay": 0.03
+    },
+    {
+      "sensorId": "SENS_WATER_01",
+      "type": "water",
+      "location": "Basement Water Heater",
+      "unit": "conductivity",
+      "baseline": 0.0,
+      "noiseStd": 0.01,
+      "batteryDrainPerDay": 0.02
+    }
+  ]
+}

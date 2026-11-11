@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "SafeHome SOS",
+    "slug": "smart-home-safety-mobile",
+    "owner": "coutcho",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#12141C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        },
+        "NSLocalNetworkUsageDescription": "This app requires access to your local network to connect to your Smart Home backend."
+      }
+    },
+    "android": {
+      "permissions": ["VIBRATE", "CALL_PHONE"]
+    },
+    "plugins": ["expo-asset"]
+  }
+}

@@ -1,0 +1,20 @@
+[Unit]
+Description=Smart Home Safety IoT Sensor Simulator Service
+After=network.target
+
+[Service]
+Type=simple
+User=lubuntu
+WorkingDirectory=/opt/smart-home-safety/simulator
+ExecStart=/usr/bin/python3 -u /opt/smart-home-safety/simulator/engine.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+# Hardening
+ProtectSystem=full
+ProtectHome=read-only
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
