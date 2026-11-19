@@ -10,6 +10,10 @@ router.post('/readings', verifySensorApiKey, validateSensorReading, SensorContro
 // Heartbeat keep-alive (IoT / Simulator)
 router.post('/heartbeat', verifySensorApiKey, SensorController.heartbeat);
 
+// Simulator command sync (Simulator only)
+router.get('/simulation/commands', verifySensorApiKey, SensorController.getSimulationCommands);
+router.post('/simulation/commands/ack', verifySensorApiKey, SensorController.acknowledgeSimulationCommands);
+
 // Query all sensors
 router.get('/', SensorController.getSensors);
 

@@ -14,6 +14,7 @@ class HouseController {
   static async getDashboard(req, res) {
     try {
       const { houseId } = req.params;
+      res.set('Cache-Control', 'no-store');
 
       // 1. Fetch House record
       const houseSnap = await db.collection('houses').doc(houseId).get();

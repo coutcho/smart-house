@@ -138,12 +138,43 @@ class AlertController {
         resolutionNotes: resolutionNotes || 'Hazard cleared and verified by resident.'
       });
 
-      // Also mark sensor back to normal if no other active alerts exist
+      // Reset the sensor state when this was the sensor's last unresolved alert.
       if (alertData.sensorId) {
-        await db.collection('sensors').doc(alertData.sensorId).update({
-          status: 'normal',
-          updatedAt: FieldValue.serverTimestamp()
-        });
+        const sensorRef = db.collection('sensors').doc(alertData.sensorId);
+        const [sensorSnap, activeAlerts, acknowledgedAlerts] = await Promise.all([
+          sensorRef.get(),
+          db.collection('alerts')
+            .where('sensorId', '==', alertData.sensorId)
+            .where('status', '==', 'active')
+            .get(),
+          db.collection('alerts')
+            .where('sensorId', '==', alertData.sensorId)
+            .where('status', '==', 'acknowledged')
+            .get()
+        ]);
+
+        if (sensorSnap.exists && activeAlerts.empty && acknowledgedAlerts.empty) {
+          const sensor = sensorSnap.data();
+          const sensorUpdate = {
+            status: 'normal',
+            updatedAt: FieldValue.serverTimestamp()
+          };
+
+          // Simulators need an explicit command because they keep their mode in memory.
+          if (sensor.isSimulator === true) {
+            const normalBaselines = {
+              gas: 12,
+              smoke: 2,
+              temperature: 21.5,
+              water: 0
+            };
+            sensorUpdate.requestedMode = 'normal';
+            sensorUpdate.lastValue = typeof sensor.baseline === 'number'
+              ? sensor.baseline
+              : (normalBaselines[sensor.type] ?? 0);
+          }
+          await sensorRef.update(sensorUpdate);
+        }
       }
 
       return res.json({ success: true, message: 'Incident resolved successfully.' });

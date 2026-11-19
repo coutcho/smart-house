@@ -1,0 +1,17 @@
+
+# Dependencies
+**/node_modules/
+
+# Environment variables and secrets
+**/.env
+**/.env.*
+
+# Keep the example environment file
+!**/.env.example
+
+# Python generated files
+**/__pycache__/
+*.py[cod]
+
+# Expo generated files
+**/.expo/

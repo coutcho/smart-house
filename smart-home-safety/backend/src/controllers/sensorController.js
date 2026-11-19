@@ -22,6 +22,8 @@ class SensorController {
         type,
         value,
         unit,
+        baseline,
+        simulator = false,
         location = 'General Area',
         batteryLevel = 100
       } = req.body;
@@ -50,6 +52,8 @@ class SensorController {
         houseId,
         type,
         location,
+        ...(typeof baseline === 'number' ? { baseline } : {}),
+        isSimulator: simulator === true,
         lastValue: value,
         unit,
         batteryLevel,
@@ -182,7 +186,7 @@ class SensorController {
    */
   static async heartbeat(req, res) {
     try {
-      const { sensorId, houseId, type, location, batteryLevel = 100 } = req.body;
+      const { sensorId, houseId, type, location, simulator = false, batteryLevel = 100 } = req.body;
 
       if (!sensorId) {
         return res.status(400).json({ error: "Missing required 'sensorId'." });
@@ -193,6 +197,7 @@ class SensorController {
         houseId: houseId || 'HOUSE_001',
         type: type || 'unknown',
         location: location || 'General Area',
+        isSimulator: simulator === true,
         batteryLevel,
         isOnline: true,
         lastHeartbeat: new Date().toISOString(),
@@ -216,6 +221,59 @@ class SensorController {
       const sensors = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       return res.json({ success: true, count: sensors.length, sensors });
     } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * GET /api/v1/sensors/simulation/commands
+   */
+  static async getSimulationCommands(req, res) {
+    try {
+      const houseId = req.query.houseId || 'HOUSE_001';
+      const snap = await db.collection('sensors').where('houseId', '==', houseId).get();
+      const commands = snap.docs
+        .map(doc => doc.data())
+        .filter(sensor => sensor.isSimulator === true && sensor.requestedMode)
+        .map(sensor => ({ sensorId: sensor.sensorId, mode: sensor.requestedMode }));
+
+      res.set('Cache-Control', 'no-store');
+      return res.json({ success: true, commands });
+    } catch (error) {
+      console.error('[SensorController] Error fetching simulation commands:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * POST /api/v1/sensors/simulation/commands/ack
+   */
+  static async acknowledgeSimulationCommands(req, res) {
+    try {
+      const { houseId = 'HOUSE_001', commands = [] } = req.body;
+      if (!Array.isArray(commands)) {
+        return res.status(400).json({ error: "'commands' must be an array." });
+      }
+
+      let acknowledged = 0;
+      for (const command of commands) {
+        if (!command?.sensorId || !command?.mode) continue;
+        const sensorRef = db.collection('sensors').doc(command.sensorId);
+        const sensorSnap = await sensorRef.get();
+        const sensor = sensorSnap.exists ? sensorSnap.data() : null;
+        if (
+          sensor?.houseId === houseId &&
+          sensor.isSimulator === true &&
+          sensor.requestedMode === command.mode
+        ) {
+          await sensorRef.update({ requestedMode: null });
+          acknowledged += 1;
+        }
+      }
+
+      return res.json({ success: true, acknowledged });
+    } catch (error) {
+      console.error('[SensorController] Error acknowledging simulation commands:', error);
       return res.status(500).json({ error: error.message });
     }
   }

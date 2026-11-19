@@ -50,6 +50,8 @@ class BaseSensor:
             "houseId": house_id,
             "type": self.sensor_type,
             "location": self.location,
+            "baseline": self.baseline,
+            "simulator": True,
             "value": round(self.current_value, 2),
             "unit": self.unit,
             "batteryLevel": round(self.battery_level, 1),
@@ -62,6 +64,7 @@ class BaseSensor:
             "houseId": house_id,
             "type": self.sensor_type,
             "location": self.location,
+            "simulator": True,
             "batteryLevel": round(self.battery_level, 1)
         }
 

@@ -18,6 +18,10 @@ const houseRoutes = require("./routes/houseRoutes");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// The mobile client polls live telemetry frequently and does not cache 304 bodies.
+// Disable Express ETags so unchanged dashboard responses remain usable 200 responses.
+app.set('etag', false);
+
 // 1. FIXED CORS CONFIGURATION FOR iOS & ANDROID
 app.use(
   cors({

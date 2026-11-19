@@ -51,6 +51,7 @@ class SimulationEngine:
 
     def step_and_send_all(self) -> List[dict]:
         """Steps all sensors and dispatches telemetry to backend."""
+        self.apply_backend_commands()
         results = []
         for sensor in self.sensors.values():
             if sensor.mode == "offline":
@@ -69,6 +70,42 @@ class SimulationEngine:
                 "response": resp
             })
         return results
+
+    def apply_backend_commands(self) -> None:
+        """Apply pending mode changes requested by the backend, then acknowledge them."""
+        url = f"{self.base_url.rstrip('/')}/sensors/simulation/commands?houseId={self.house_id}"
+        request = urllib.request.Request(
+            url,
+            headers={"X-Sensor-API-Key": self.api_key},
+            method="GET"
+        )
+
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception as exc:
+            logger.warning(f"Could not check backend simulation commands: {exc}")
+            return
+
+        applied = []
+        for command in payload.get("commands", []):
+            sensor_id = command.get("sensorId")
+            mode = command.get("mode")
+            sensor = self.sensors.get(sensor_id)
+            if sensor and mode in {"normal", "warning", "emergency", "offline"}:
+                sensor.set_mode(mode)
+                applied.append({"sensorId": sensor_id, "mode": mode})
+                logger.info(f"Applied backend mode change: {sensor_id} -> {mode.upper()}")
+
+        if not applied:
+            return
+
+        status, result = self.send_http(
+            "/sensors/simulation/commands/ack",
+            {"houseId": self.house_id, "commands": applied}
+        )
+        if status != 200:
+            logger.error(f"Could not acknowledge simulation commands: HTTP {status} {result}")
 
     def send_heartbeats_all(self) -> List[dict]:
         """Dispatches keep-alive heartbeat for all online sensors."""
